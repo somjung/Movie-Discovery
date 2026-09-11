@@ -43,6 +43,13 @@ pip install -r requirements.txt
 python -m src.app               # start the interactive CLI
 ```
 
+## Sprint 1 submission notebook (Colab)
+
+The full Sprint 1 report (project pitch, plan, execution and results) is in
+`notebooks/Sprint1_MovieDiscovery.ipynb`. To re-run it: upload the file to
+Google Colab and click **Run all**. It works end-to-end with the built-in
+sample data (no API key required).
+
 ## Project structure
 
 ```
@@ -60,7 +67,7 @@ script-final-project/
 │   └── config.py        # constants + API-key lookup
 ├── tests/               # pytest suite (CLI + foundation modules)
 ├── data/                # local SQLite file (created in later sprints)
-├── notebooks/           # Sprint 1 submission notebook (plan / execution / result)
+├── notebooks/           # Sprint 1 submission notebook (pitch / plan / execution / result)
 ├── tools/               # notebook rebuild helper (build_notebook.py)
 └── .github/workflows/   # CI: flake8 + pytest on every push
 ```
