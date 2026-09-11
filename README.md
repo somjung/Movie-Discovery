@@ -36,7 +36,7 @@ pip install -r requirements.txt
 python -m src.app               # เริ่มโปรแกรม CLI
 ```
 
-## รายงาน Sprint 1 (เปิดใน Colab)
+## รายงาน Sprint 1 
 
 รายงานฉบับเต็มของ Sprint 1 (ข้อเสนอโครงการ แผนงาน การพัฒนา และผลลัพธ์) อยู่ในไฟล์ `sprint1/Sprint1_MovieDiscovery.ipynb` ถ้าต้องการรันซ้ำ ให้อัปโหลดไฟล์นี้ขึ้น Google Colab แล้วกด **Run all** ได้ทันที โดยใช้ข้อมูลตัวอย่างที่ฝังอยู่ในโปรแกรม (ไม่ต้องใช้คีย์ API)
 
@@ -72,6 +72,6 @@ CI: `.github/workflows/ci.yml` รัน flake8 และ pytest อัตโน
 - [ ] Sprint 3: รวมระบบทั้งหมดและเก็บเคสขอบเขตให้แน่นขึ้น
 - [ ] Final: DevOps, CI/CD, ฟีเจอร์ AI และเอกสาร/เดโมให้ครบชุด
 
-## สัญญาอนุญาต (License)
 
-MIT (ดูไฟล์ [LICENSE](LICENSE))
+
+
