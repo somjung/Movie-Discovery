@@ -7,14 +7,14 @@ apart. Run from anywhere with:
 
     python tools/build_notebook.py
 
-Output: notebooks/Sprint1_MovieDiscovery.ipynb
+Output: sprint1/Sprint1_MovieDiscovery.ipynb
 """
 
 import json
 import pathlib
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-OUT = ROOT / "notebooks" / "Sprint1_MovieDiscovery.ipynb"
+OUT = ROOT.parent / "Sprint1_MovieDiscovery.ipynb"
 
 # --- narrative (Thai) -----------------------------------------------------
 
