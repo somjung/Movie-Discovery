@@ -31,7 +31,7 @@ TITLE = """# รายงานผลการดำเนินงาน Sprint
 | Coder | [ชื่อนักศึกษา] |
 | Debugger / QA | [ชื่อนักศึกษา] |
 
-**Repository / Pull Request:** _(จะเพิ่มลิงก์เมื่อสร้าง Pull Request บน GitHub)_
+**Repository / Pull Request:** https://github.com/somjung/Movie-Discovery
 
 ---
 
@@ -90,7 +90,7 @@ RESULT = """## ส่วนที่ 3 — ผลลัพธ์และกา�
 - [x] พัฒนาชุดคำสั่งหลัก: `display_welcome_message` · `get_command_input` · เมนูและตัวจัดการคำสั่ง · ลูป `run`
 - [x] ดักจับข้อผิดพลาดด้วย `try / except` (อินพุตผิดรูป · EOF · Ctrl+C)
 - [x] ทดสอบอัตโนมัติ 20 เคสของ CLI (ผ่านทั้งหมด — เซลล์ pytest ด้านบน) + ทดสอบด้วยเซสชันสคริปต์
-- [ ] ส่งมอบผ่าน Pull Request บน GitHub _(รอลิงก์ repository จากทีม)_
+- [ ] ส่งมอบผ่าน Pull Request บน GitHub (repo: https://github.com/somjung/Movie-Discovery)
 
 ### 3.2 ผลการทดสอบกรณีขอบเขต (QA Report)
 
@@ -119,7 +119,7 @@ RESULT = """## ส่วนที่ 3 — ผลลัพธ์และกา�
 
 ### 3.4 ลิงก์และขั้นตอนถัดไป
 
-- **Repository / Pull Request:** _(จะเพิ่มเมื่อสร้างบน GitHub)_
+- **Repository / Pull Request:** https://github.com/somjung/Movie-Discovery
 - **Sprint 2 (Back-End):** เชื่อมต่อ TMDB API จริง · SQLite · ค้นหา/กรอง/เรียงลำดับ · File I/O
 """
 
