@@ -1,0 +1,17 @@
+# Virtual environments
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.pyc
+
+# Environment / secrets
+.env
+
+# Local data
+data/*.db
+
+# Tooling caches
+.pytest_cache/
+.ipynb_checkpoints/

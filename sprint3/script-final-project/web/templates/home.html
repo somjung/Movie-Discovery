@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Movie Discovery &amp; Watchlist Builder{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>ระบบค้นพบภาพยนตร์และสร้างรายการรับชม</h1>
+  <p>ค้นหาภาพยนตร์จาก TMDB สำรวจเรื่องที่คล้ายกัน จัดการรายการรับชมของคุณ
+     และรับชมภาพยนตร์สาธารณสมบัติได้จากในตัวเว็บ</p>
+  <form class="search-form" action="/search" method="get">
+    <input type="text" name="q" placeholder="ค้นหาชื่อภาพยนตร์ เช่น inception"
+           autocomplete="off">
+    <button type="submit">ค้นหา</button>
+  </form>
+  <p class="quick-links">
+    ไปที่: <a href="/watchlist">รายการรับชม</a> ·
+    <a href="/favorites">รายการโปรด</a> ·
+    <a href="/history">ประวัติการค้นหา</a>
+  </p>
+</section>
+{% endblock %}
