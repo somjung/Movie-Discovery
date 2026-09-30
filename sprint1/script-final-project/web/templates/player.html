@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{% if entry %}{{ entry.label }}{% else %}เล่นหนัง{% endif %} — Movie Discovery{% endblock %}
+{% block content %}
+<section class="player-page">
+  {% if entry %}
+  <h1 class="page-title">{{ entry.label }}</h1>
+  <video class="player" controls preload="metadata"
+         src="/media/{{ entry.file }}">
+    เบราว์เซอร์ของคุณไม่รองรับวิดีโอ HTML5
+  </video>
+  <p class="player-credit">{{ entry.credit }}</p>
+  <p>
+    <a class="btn" href="/movie/{{ movie_id }}">← กลับหน้ารายละเอียดหนัง</a>
+  </p>
+  {% else %}
+  <h1 class="page-title">ยังเล่นไม่ได้</h1>
+  <p class="notice">
+    {% if known %}
+    ไฟล์หนังยังไม่มีในเครื่อง — รันคำสั่งนี้ในโฟลเดอร์โปรเจกต์
+    แล้วรีเฟรชหน้านี้:<br>
+    <code>python scripts/fetch_demo_video.py</code><br>
+    (ดาวน์โหลดประมาณ 318 MB จาก archive.org · ทำต่อได้ถ้าหยุดกลางทาง)
+    {% else %}
+    ยังไม่มีไฟล์สำหรับเรื่องนี้ — เดโมนี้เล่นได้เฉพาะเรื่อง
+    Night of the Living Dead (รหัส 10331)
+    {% endif %}
+  </p>
+  <p>
+    <a class="btn" href="/movie/{{ movie_id }}">← กลับหน้ารายละเอียดหนัง</a>
+  </p>
+  {% endif %}
+</section>
+{% endblock %}

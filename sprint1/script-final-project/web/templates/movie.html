@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% import "_card.html" as cards with context %}
+{% block title %}{{ movie.title }} — Movie Discovery{% endblock %}
+{% block content %}
+
+{% for text in notices %}
+<p class="notice">{{ text }}</p>
+{% endfor %}
+
+<section class="detail-hero"
+    {% if backdrop_url %}
+    style="background-image: linear-gradient(rgba(13, 27, 52, 0.72),
+           rgba(13, 27, 52, 0.88)), url('{{ backdrop_url }}');"
+    {% endif %}>
+  <div class="detail-poster">
+    {% if poster_url %}
+    <img src="{{ poster_url }}" alt="โปสเตอร์ {{ movie.title }}">
+    {% else %}
+    <span class="poster-fallback">🎬</span>
+    {% endif %}
+  </div>
+  <div class="detail-info">
+    <h1>{{ movie.title }}</h1>
+    <p class="detail-meta">
+      {{ year or '----' }}
+      {% if runtime %} · {{ runtime }} นาที{% endif %}
+      {% if movie.vote_average is not none %}
+      · คะแนน ★ {{ '%.1f'|format(movie.vote_average) }} / 10
+      {% endif %}
+      {% if movie.vote_count %}
+      · {{ '{:,}'.format(movie.vote_count) }} โหวต
+      {% endif %}
+    </p>
+    {% if genres %}
+    <p class="genres">
+      {% for genre in genres %}<span class="chip">{{ genre.name }}</span>{% endfor %}
+    </p>
+    {% endif %}
+    {% if movie.overview %}
+    <p class="overview">{{ movie.overview }}</p>
+    {% else %}
+    <p class="overview muted">(ไม่มีเรื่องย่อในฐานข้อมูล)</p>
+    {% endif %}
+    <div class="actions">
+      {% if movie.id in playable_ids %}
+      <a class="btn play" href="/play/{{ movie.id }}">▶ เล่นหนัง</a>
+      {% endif %}
+      {% if in_watchlist %}
+      <form method="post" action="/watchlist/remove/{{ movie.id }}">
+        <input type="hidden" name="next" value="/movie/{{ movie.id }}">
+        <button class="btn ghost" type="submit">− ลบออกจากรายการรับชม</button>
+      </form>
+      {% else %}
+      <form method="post" action="/watchlist/add/{{ movie.id }}">
+        <input type="hidden" name="next" value="/movie/{{ movie.id }}">
+        <button class="btn" type="submit">+ เพิ่มเข้ารายการรับชม</button>
+      </form>
+      {% endif %}
+      {% if in_favorites %}
+      <form method="post" action="/favorites/remove/{{ movie.id }}">
+        <input type="hidden" name="next" value="/movie/{{ movie.id }}">
+        <button class="btn ghost" type="submit">− ลบออกจากรายการโปรด</button>
+      </form>
+      {% else %}
+      <form method="post" action="/favorites/add/{{ movie.id }}">
+        <input type="hidden" name="next" value="/movie/{{ movie.id }}">
+        <button class="btn" type="submit">+ เพิ่มเข้ารายการโปรด</button>
+      </form>
+      {% endif %}
+    </div>
+    {% if in_watchlist or in_favorites %}
+    <p class="state-line">
+      {% if in_watchlist %}<span class="state-on">✓ อยู่ในรายการรับชม</span>{% endif %}
+      {% if in_favorites %}<span class="state-on">✓ อยู่ในรายการโปรด</span>{% endif %}
+    </p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="similar">
+  <h2>หนังคล้ายกัน</h2>
+  <form class="filters" method="get" action="/movie/{{ movie.id }}">
+    <label>คะแนนขั้นต่ำ
+      <input type="number" name="min_rating" min="0" max="10" step="0.5"
+             value="{{ filters.min_rating }}">
+    </label>
+    <label>โหวตขั้นต่ำ
+      <input type="number" name="min_votes" min="0" step="10"
+             value="{{ filters.min_votes }}">
+    </label>
+    <label>ปีจาก
+      <input type="number" name="year_from" min="1900" max="2100"
+             value="{{ filters.year_from if filters.year_from else '' }}">
+    </label>
+    <label>ถึงปี
+      <input type="number" name="year_to" min="1900" max="2100"
+             value="{{ filters.year_to if filters.year_to else '' }}">
+    </label>
+    <label>เรียงตาม
+      <select name="sort">
+        {% for option in sorts %}
+        <option value="{{ option }}"{% if option == filters.sort %} selected{% endif %}>{{ sort_labels[option] }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>จำนวน
+      <select name="limit">
+        {% for option in (5, 10, 15, 20) %}
+        <option value="{{ option }}"{% if option == filters.limit %} selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button class="btn" type="submit">กรอง</button>
+  </form>
+
+  {% if similar_error %}
+  <p class="notice">{{ similar_error }}</p>
+  {% elif similar %}
+  <div class="cards">
+    {% for item in similar %}{{ cards.movie_card(item) }}{% endfor %}
+  </div>
+  {% else %}
+  <p class="notice">ไม่พบหนังคล้ายที่ผ่านตัวกรอง — ลองลดเงื่อนไขแล้วกรองใหม่</p>
+  {% endif %}
+</section>
+{% endblock %}
