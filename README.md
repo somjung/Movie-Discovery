@@ -2,7 +2,6 @@
 
 โครงงานปลายภาครายวิชา **CP352301 Script Programming (1/2569)** พัฒนาด้วยภาษา Python — เริ่มจากโปรแกรมบรรทัดคำสั่ง (Sprint 1) ต่อด้วยระบบหลังบ้านจริง (Sprint 2) และปิดรอบด้วยเว็บแอปที่ใช้ตรรกะชุดเดียวกัน (Sprint 3) โดยแต่ละรอบพัฒนาต่อจากโค้ดของรอบก่อนหน้า
 
-> This product uses the TMDB API but is not endorsed or certified by TMDB.
 
 ## สถานะของ Sprint
 
@@ -43,10 +42,12 @@
 │   ├── Sprint1_MovieDiscovery.ipynb # รายงาน Sprint 1 (ข้อเสนอ / แผนงาน / การพัฒนา / ผลลัพธ์)
 │   └── script-final-project/        # โค้ดเวอร์ชัน Sprint 1 (เทสต์ 40 เคส)
 ├── sprint2/                         # งานส่งรอบที่ 2
-│   ├── PLAN.md · ARCHITECTURE.md    # แผนงาน + สถาปัตยกรรม Sprint 2
+│   ├── PLAN.md                      # แผนงาน Sprint 2
+│   ├── Sprint2_MovieDiscovery.ipynb # รายงาน Sprint 2 (รันซ้ำได้แบบออฟไลน์)
 │   └── script-final-project/        # โค้ดเวอร์ชัน Sprint 2 (TMDB จริง · SQLite — เทสต์ 93 เคส)
 └── sprint3/                         # งานส่งรอบที่ 3
     ├── PLAN.md                      # แผนงาน + สเปกเว็บ/Player/Edge cases/DoD ของ Sprint 3
+    ├── Sprint3_MovieDiscovery.ipynb # รายงาน Sprint 3 (สาธิตเว็บ + Player)
     └── script-final-project/        # โค้ดเวอร์ชันล่าสุด (เว็บแอป + Player — เทสต์ 142 เคส)
 ```
 
@@ -66,7 +67,9 @@ python -m web                   # เริ่มเว็บแอป (ต้�
 ## รายงานและเอกสาร
 
 - รายงาน Sprint 1 ฉบับเต็ม: `sprint1/Sprint1_MovieDiscovery.ipynb` — รันซ้ำได้บน Google Colab ด้วยข้อมูลตัวอย่างที่ฝังในโปรแกรม (ไม่ต้องใช้คีย์ API)
-- แผนงาน + สถาปัตยกรรม Sprint 2: `sprint2/PLAN.md` · `sprint2/ARCHITECTURE.md`
+- รายงาน Sprint 2 ฉบับเต็ม: `sprint2/Sprint2_MovieDiscovery.ipynb` — รันซ้ำได้แบบออฟไลน์ 100% (ไม่ต้องใช้คีย์ API)
+- รายงาน Sprint 3 ฉบับเต็ม: `sprint3/Sprint3_MovieDiscovery.ipynb` — สาธิตเว็บแอป + Player · รันซ้ำได้แบบออฟไลน์ 100%
+- แผนงาน Sprint 2: `sprint2/PLAN.md`
 - แผนงาน + สเปกละเอียดของ Sprint 3: `sprint3/PLAN.md`
 
 ## ทดสอบและคุณภาพโค้ด
