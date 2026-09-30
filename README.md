@@ -38,6 +38,7 @@
 ```
 .
 ├── README.md
+├── CHANGELOG.md                     # บันทึกการเปลี่ยนแปลงรายรอบ Sprint
 ├── .github/workflows/ci.yml         # CI: flake8 + pytest (ตรวจโค้ดเวอร์ชันล่าสุด)
 ├── sprint1/                         # งานส่งรอบที่ 1
 │   ├── Sprint1_MovieDiscovery.ipynb # รายงาน Sprint 1 (ข้อเสนอ / แผนงาน / การพัฒนา / ผลลัพธ์)
@@ -72,13 +73,14 @@ python -m web                   # เริ่มเว็บแอป (ต้�
 - รายงาน Sprint 3 ฉบับเต็ม: `sprint3/Sprint3_MovieDiscovery.ipynb` — สาธิตเว็บแอป · รันซ้ำได้แบบออฟไลน์ 100%
 - แผนงาน Sprint 2: `sprint2/PLAN.md`
 - แผนงาน + สเปกละเอียดของ Sprint 3: `sprint3/PLAN.md`
+- บันทึกการเปลี่ยนแปลงรายรอบ Sprint: `CHANGELOG.md`
 
 ## ทดสอบและคุณภาพโค้ด
 
 ```bash
 cd sprint3/script-final-project   # หรือโฟลเดอร์ Sprint ที่ต้องการตรวจ
 python -m pytest -q               # รันออฟไลน์ ไม่ต้องใช้คีย์ API
-flake8 src tests web             # ตรวจรูปแบบโค้ด PEP 8 (Sprint 1–2 ใช้ flake8 src tests)
+flake8 src tests web              # ตรวจรูปแบบโค้ด PEP 8 (Sprint 1–2 ใช้ flake8 src tests)
 ```
 
 จำนวนเทสต์รายรอบ: **Sprint 1 = 40** · **Sprint 2 = 93** · **Sprint 3 = 133** (ผ่านทั้งหมด · flake8 สะอาดทุกรอบ)
