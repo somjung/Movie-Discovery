@@ -2,8 +2,7 @@
 
 Implemented so far: the home page, the search results page, the movie
 details page (similar movies, filters and list buttons), the two list
-pages (cross-list stars, CSV download) and the search history.  The
-player arrives in the next step.
+pages (cross-list stars, CSV download) and the search history.
 """
 
 import os
@@ -40,55 +39,6 @@ ACTION_NOTICES = {
         "และโหมดนี้ไม่มีคีย์ TMDB"
     ),
 }
-
-# Movies that can be played locally.  Each entry lists candidate files
-# in preference order; the first one that exists on disk is used.  This
-# is the single place that decides what is playable — the ▶ badge and
-# the player page both read from here.
-PLAYABLE_MOVIES = {
-    10331: (
-        {
-            "file": "night_of_the_living_dead.mp4",
-            "label": "Night of the Living Dead (1968)",
-            "credit": ("ภาพยนตร์สาธารณสมบัติ (public domain) — "
-                       "ไฟล์จาก archive.org"),
-        },
-        {
-            "file": "night_of_the_living_dead_hd.mp4",
-            "label": "Night of the Living Dead (1968) — ฉบับ HD",
-            "credit": ("ภาพยนตร์สาธารณสมบัติ (public domain) — "
-                       "ไฟล์จาก archive.org (พิมพ์ HD)"),
-        },
-        {
-            "file": "big_buck_bunny.mp4",
-            "label": "Big Buck Bunny (2008)",
-            "credit": ("Big Buck Bunny © Blender Foundation — "
-                       "CC BY 3.0 · ไฟล์จาก archive.org"),
-        },
-    ),
-}
-
-# Every file name the media route may serve (blocks path traversal).
-KNOWN_VIDEO_FILES = frozenset(
-    entry["file"]
-    for entries in PLAYABLE_MOVIES.values()
-    for entry in entries
-)
-
-
-def playable_video(tmdb_id, data_dir):
-    """Return the first ready video entry for a movie, or None."""
-    for entry in PLAYABLE_MOVIES.get(tmdb_id, ()):
-        path = os.path.join(data_dir, "videos", entry["file"])
-        if os.path.exists(path):
-            return entry
-    return None
-
-
-def playable_ids(data_dir):
-    """Movie ids with at least one ready video file (for the ▶ badge)."""
-    return {tmdb_id for tmdb_id in PLAYABLE_MOVIES
-            if playable_video(tmdb_id, data_dir) is not None}
 
 
 def get_services():
@@ -458,27 +408,3 @@ def favorites_add(tmdb_id):
 def favorites_remove(tmdb_id):
     """Remove one movie from favorites, then return to the page."""
     return _remove_from_list("favorites", tmdb_id)
-
-
-@bp.get("/play/<int:tmdb_id>")
-def play(tmdb_id):
-    """Play page: video player when the file is ready, else guidance."""
-    services = get_services()
-    entry = playable_video(tmdb_id, services["data_dir"])
-    return render_template(
-        "player.html",
-        movie_id=tmdb_id,
-        entry=entry,
-        known=tmdb_id in PLAYABLE_MOVIES,
-    )
-
-
-@bp.get("/media/<name>")
-def media(name):
-    """Serve one local video file with Range support (seek works)."""
-    if name not in KNOWN_VIDEO_FILES:
-        abort(404)
-    path = os.path.join(get_services()["data_dir"], "videos", name)
-    if not os.path.exists(path):
-        abort(404)
-    return send_file(path, mimetype="video/mp4", conditional=True)

@@ -1,8 +1,7 @@
 """Web-layer tests (Sprint 3): every route, offline, no key, no network.
 
 Uses the Flask test client with the shared fakes and an in-memory store.
-Media tests write a small dummy video file into the temp data dir, so
-the real movie file is never needed and CI stays keyless.
+Everything runs offline: no key, no network, no generated files.
 """
 
 import pytest
@@ -15,50 +14,6 @@ from src.sample_data import SAMPLE_MOVIES
 from src.tmdb_client import TmdbError
 from src.watchlist import WatchlistBuilder
 from web import create_app
-
-VIDEO_NAME = "night_of_the_living_dead.mp4"
-VIDEO_PAYLOAD = bytes(range(256)) * 4
-
-
-def write_video(tmp_path, name=VIDEO_NAME, payload=VIDEO_PAYLOAD):
-    """Place a dummy video file in the temp data dir and return its path."""
-    videos = tmp_path / "videos"
-    videos.mkdir(exist_ok=True)
-    path = videos / name
-    path.write_bytes(payload)
-    return path
-
-
-class PlayableFake(FakeTmdbClient):
-    """Fake client that knows TMDB id 10331 (the local demo movie)."""
-
-    DETAIL = {
-        "id": 10331,
-        "title": "Night of the Living Dead",
-        "release_date": "1968-10-01",
-        "vote_average": 7.6,
-        "vote_count": 1500,
-        "popularity": 30.0,
-        "overview": "A group of people hide from zombies in a farmhouse.",
-        "poster_path": None,
-        "backdrop_path": None,
-    }
-
-    def get_movie_details(self, tmdb_id):
-        if tmdb_id == 10331:
-            self.detail_calls.append(tmdb_id)
-            return dict(self.DETAIL)
-        return super().get_movie_details(tmdb_id)
-
-    def get_similar(self, tmdb_id, page=1):
-        if tmdb_id == 10331:
-            return [dict(self.DETAIL)]
-        return super().get_similar(tmdb_id, page)
-
-    def get_recommendations(self, tmdb_id, page=1):
-        if tmdb_id == 10331:
-            return []
-        return super().get_recommendations(tmdb_id, page)
 
 
 class FlakyFake(FakeTmdbClient):
@@ -363,71 +318,6 @@ class TestListPages:
     def test_export_bad_kind_404(self, tmp_path, store):
         client = make_client(tmp_path, store, FakeTmdbClient())
         assert client.get("/export/whatever").status_code == 404
-
-
-class TestPlayer:
-    def test_player_without_file_shows_guidance(self, tmp_path, store):
-        resp = make_client(tmp_path, store, PlayableFake()).get("/play/10331")
-        html = resp.get_data(as_text=True)
-        assert resp.status_code == 200
-        assert "ไฟล์หนังยังไม่มีในเครื่อง" in html
-        assert "fetch_demo_video.py" in html
-
-    def test_player_with_file_renders_video(self, tmp_path, store):
-        write_video(tmp_path)
-        resp = make_client(tmp_path, store, PlayableFake()).get("/play/10331")
-        html = resp.get_data(as_text=True)
-        assert resp.status_code == 200
-        assert f'src="/media/{VIDEO_NAME}"' in html
-        assert "Night of the Living Dead (1968)" in html
-        assert "archive.org" in html
-
-    def test_unknown_movie_gets_notice(self, tmp_path, store):
-        resp = make_client(tmp_path, store, PlayableFake()).get("/play/999")
-        assert "ยังไม่มีไฟล์สำหรับเรื่องนี้" in resp.get_data(as_text=True)
-
-    def test_detail_page_shows_play_button_and_badge(self, tmp_path, store):
-        write_video(tmp_path)
-        resp = make_client(tmp_path, store, PlayableFake()).get("/movie/10331")
-        html = resp.get_data(as_text=True)
-        assert resp.status_code == 200
-        assert "▶ เล่นหนัง" in html
-        assert 'class="play-badge"' in html
-
-    def test_media_serves_full_file(self, tmp_path, store):
-        write_video(tmp_path)
-        resp = make_client(tmp_path, store, PlayableFake()).get(
-            f"/media/{VIDEO_NAME}")
-        assert resp.status_code == 200
-        assert resp.headers["Content-Type"].startswith("video/mp4")
-        assert resp.get_data() == VIDEO_PAYLOAD
-        resp.close()
-
-    def test_media_supports_range(self, tmp_path, store):
-        write_video(tmp_path)
-        resp = make_client(tmp_path, store, PlayableFake()).get(
-            f"/media/{VIDEO_NAME}", headers={"Range": "bytes=0-9"})
-        assert resp.status_code == 206
-        assert resp.get_data() == VIDEO_PAYLOAD[:10]
-        header = resp.headers["Content-Range"]
-        assert f"bytes 0-9/{len(VIDEO_PAYLOAD)}" in header
-        resp.close()
-
-    def test_media_unknown_name_404(self, tmp_path, store):
-        resp = make_client(tmp_path, store, PlayableFake()).get(
-            "/media/nope.mp4")
-        assert resp.status_code == 404
-
-    def test_media_traversal_blocked(self, tmp_path, store):
-        client = make_client(tmp_path, store, PlayableFake())
-        assert client.get("/media/..%2F..%2Fapp.py").status_code == 404
-
-    def test_fallback_file_changes_label(self, tmp_path, store):
-        write_video(tmp_path, name="big_buck_bunny.mp4", payload=b"bb")
-        resp = make_client(tmp_path, store, PlayableFake()).get("/play/10331")
-        html = resp.get_data(as_text=True)
-        assert 'src="/media/big_buck_bunny.mp4"' in html
-        assert "Big Buck Bunny (2008)" in html
 
 
 class TestErrorPages:

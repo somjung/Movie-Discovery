@@ -300,30 +300,4 @@ a.nav-stat:hover { text-decoration: underline; }
 
 .quick-links { margin-top: 10px; }
 
-/* --- player --- */
-
 .poster { position: relative; }
-
-.play-badge {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  z-index: 1;
-  background: rgba(13, 27, 52, 0.82);
-  color: #ffffff;
-  border-radius: 999px;
-  padding: 4px 12px;
-  font-size: 14px;
-}
-
-.player-page .player {
-  width: 100%;
-  max-width: 900px;
-  background: #000000;
-  border-radius: 10px;
-  display: block;
-}
-
-.player-credit { color: #556; font-size: 13px; margin: 10px 0 16px; }
-
-.btn.play { background: #1f7a3d; }

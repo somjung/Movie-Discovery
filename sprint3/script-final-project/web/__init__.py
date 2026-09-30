@@ -107,7 +107,7 @@ def create_app(client=None, store=None, data_dir=None, db_path=None):
         if bundle is not None and bundle["close_store"]:
             bundle["store"].close()
 
-    from .routes import bp, playable_ids
+    from .routes import bp
     app.register_blueprint(bp)
 
     @app.errorhandler(TmdbError)
@@ -133,7 +133,7 @@ def create_app(client=None, store=None, data_dir=None, db_path=None):
 
     @app.context_processor
     def inject_nav_state():
-        """Give every page the list counts and the playable-movie ids."""
+        """Give every page the nav list counts and the key-banner state."""
         bundle = getattr(g, "services", None)
         if bundle is None:
             # Database error path: neutral navigation, no key banner.
@@ -141,14 +141,12 @@ def create_app(client=None, store=None, data_dir=None, db_path=None):
                 "nav_watchlist": 0,
                 "nav_favorites": 0,
                 "key_missing": False,
-                "playable_ids": frozenset(),
                 "tmdb_attribution": TMDB_ATTRIBUTION,
             }
         return {
             "nav_watchlist": len(bundle["store"].get_watchlist()),
             "nav_favorites": len(bundle["store"].get_favorites()),
             "key_missing": bundle["key_missing"],
-            "playable_ids": playable_ids(bundle["data_dir"]),
             "tmdb_attribution": TMDB_ATTRIBUTION,
         }
 

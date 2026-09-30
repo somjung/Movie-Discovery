@@ -23,7 +23,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Lint (flake8)
-        run: flake8 src tests web scripts
+        run: flake8 src tests web
 
       - name: Test (pytest)
         run: python -m pytest -q

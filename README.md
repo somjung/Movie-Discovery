@@ -7,7 +7,7 @@
 
 - **Sprint 1 (Front-End App Dev): เสร็จสมบูรณ์** โปรแกรม CLI แบบโต้ตอบ — ข้อความต้อนรับ · เมนูคำสั่ง · รับและแปลงอินพุต (`.strip().lower()`) · ตรวจสอบข้อมูลนำเข้า · ออกจากโปรแกรมอย่างสุภาพ (สาธิตด้วยข้อมูลตัวอย่างที่ฝังในโปรแกรม) → โค้ด: `sprint1/script-final-project/`
 - **Sprint 2 (Back-End): เสร็จสมบูรณ์** เชื่อมต่อ TMDB จริง · เก็บข้อมูลลง SQLite · ค้นหา/กรอง/จัดอันดับ · รายการรับชม–รายการโปรด · ส่งออก CSV (เทสต์ 93 เคส) → โค้ด: `sprint2/script-final-project/`
-- **Sprint 3 (รวมระบบเป็นเว็บแอป): เสร็จสมบูรณ์** เว็บแอป Flask ใช้บริการและฐานข้อมูลชุดเดียวกับ CLI + Player เล่นหนังจริงในเบราว์เซอร์ (เทสต์รวม 142 เคส) → โค้ด: `sprint3/script-final-project/` ← **เวอร์ชันล่าสุด**
+- **Sprint 3 (รวมระบบเป็นเว็บแอป): เสร็จสมบูรณ์** เว็บแอป Flask ใช้บริการและฐานข้อมูลชุดเดียวกับ CLI (เทสต์รวม 133 เคส) → โค้ด: `sprint3/script-final-project/` ← **เวอร์ชันล่าสุด**
 - **Final:** DevOps / CI/CD และฟีเจอร์ AI
 
 ## ทีมและบทบาท
@@ -31,7 +31,6 @@
 **เว็บแอป (Sprint 3)**
 
 - ฟีเจอร์ชุดเดียวกับ CLI ผ่านหน้าเว็บ (ฐานข้อมูล `data/movies.db` ชุดเดียวกัน)
-- Player เล่นหนังในเบราว์เซอร์ (ภาพยนตร์สาธารณสมบัติ: Night of the Living Dead 1968)
 - ตัวนับ "รายการรับชม (N) · รายการโปรด (M)" จากฐานข้อมูลจริงบนทุกหน้า · หน้าแจ้งข้อผิดพลาดอย่างสุภาพ
 
 ## โครงสร้างโปรเจกต์
@@ -48,9 +47,9 @@
 │   ├── Sprint2_MovieDiscovery.ipynb # รายงาน Sprint 2 (รันซ้ำได้แบบออฟไลน์)
 │   └── script-final-project/        # โค้ดเวอร์ชัน Sprint 2 (TMDB จริง · SQLite — เทสต์ 93 เคส)
 └── sprint3/                         # งานส่งรอบที่ 3
-    ├── PLAN.md                      # แผนงาน + สเปกเว็บ/Player/Edge cases/DoD ของ Sprint 3
-    ├── Sprint3_MovieDiscovery.ipynb # รายงาน Sprint 3 (สาธิตเว็บ + Player)
-    └── script-final-project/        # โค้ดเวอร์ชันล่าสุด (เว็บแอป + Player — เทสต์ 142 เคส)
+    ├── PLAN.md                      # แผนงาน + สเปกเว็บ/Edge cases/DoD ของ Sprint 3
+    ├── Sprint3_MovieDiscovery.ipynb # รายงาน Sprint 3 (สาธิตเว็บแอป)
+    └── script-final-project/        # โค้ดเวอร์ชันล่าสุด (เว็บแอป — เทสต์ 133 เคส)
 ```
 
 > แต่ละรอบ Sprint พัฒนาต่อจากโค้ดของรอบก่อนหน้า และเก็บ **โค้ดเวอร์ชันปิดรอบ** ไว้ในโฟลเดอร์ของรอบนั้น — โค้ดเวอร์ชันล่าสุดที่ใช้พัฒนาต่อคือ `sprint3/script-final-project/`
@@ -70,7 +69,7 @@ python -m web                   # เริ่มเว็บแอป (ต้�
 
 - รายงาน Sprint 1 ฉบับเต็ม: `sprint1/Sprint1_MovieDiscovery.ipynb` — รันซ้ำได้บน Google Colab ด้วยข้อมูลตัวอย่างที่ฝังในโปรแกรม (ไม่ต้องใช้คีย์ API)
 - รายงาน Sprint 2 ฉบับเต็ม: `sprint2/Sprint2_MovieDiscovery.ipynb` — รันซ้ำได้แบบออฟไลน์ 100% (ไม่ต้องใช้คีย์ API)
-- รายงาน Sprint 3 ฉบับเต็ม: `sprint3/Sprint3_MovieDiscovery.ipynb` — สาธิตเว็บแอป + Player · รันซ้ำได้แบบออฟไลน์ 100%
+- รายงาน Sprint 3 ฉบับเต็ม: `sprint3/Sprint3_MovieDiscovery.ipynb` — สาธิตเว็บแอป · รันซ้ำได้แบบออฟไลน์ 100%
 - แผนงาน Sprint 2: `sprint2/PLAN.md`
 - แผนงาน + สเปกละเอียดของ Sprint 3: `sprint3/PLAN.md`
 
@@ -79,10 +78,10 @@ python -m web                   # เริ่มเว็บแอป (ต้�
 ```bash
 cd sprint3/script-final-project   # หรือโฟลเดอร์ Sprint ที่ต้องการตรวจ
 python -m pytest -q               # รันออฟไลน์ ไม่ต้องใช้คีย์ API
-flake8 src tests web scripts      # ตรวจรูปแบบโค้ด PEP 8 (Sprint 1–2 ใช้ flake8 src tests)
+flake8 src tests web             # ตรวจรูปแบบโค้ด PEP 8 (Sprint 1–2 ใช้ flake8 src tests)
 ```
 
-จำนวนเทสต์รายรอบ: **Sprint 1 = 40** · **Sprint 2 = 93** · **Sprint 3 = 142** (ผ่านทั้งหมด · flake8 สะอาดทุกรอบ)
+จำนวนเทสต์รายรอบ: **Sprint 1 = 40** · **Sprint 2 = 93** · **Sprint 3 = 133** (ผ่านทั้งหมด · flake8 สะอาดทุกรอบ)
 
 CI: `.github/workflows/ci.yml` รัน flake8 และ pytest อัตโนมัติทุกครั้งที่ push (ตรวจโค้ดเวอร์ชันล่าสุดที่ `sprint3/script-final-project/`)
 
@@ -90,5 +89,5 @@ CI: `.github/workflows/ci.yml` รัน flake8 และ pytest อัตโน
 
 - [x] Sprint 1: ส่วนติดต่อผู้ใช้ CLI
 - [x] Sprint 2: Back-End (TMDB จริง · SQLite · ค้นหา/กรอง/จัดอันดับ)
-- [x] Sprint 3: รวมระบบเป็นเว็บแอป + Player
+- [x] Sprint 3: รวมระบบเป็นเว็บแอป
 - [ ] Final: DevOps · CI/CD · ฟีเจอร์ AI และเอกสาร/เดโมให้ครบชุด

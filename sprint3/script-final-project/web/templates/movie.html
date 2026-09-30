@@ -42,9 +42,6 @@
     <p class="overview muted">(ไม่มีเรื่องย่อในฐานข้อมูล)</p>
     {% endif %}
     <div class="actions">
-      {% if movie.id in playable_ids %}
-      <a class="btn play" href="/play/{{ movie.id }}">▶ เล่นหนัง</a>
-      {% endif %}
       {% if in_watchlist %}
       <form method="post" action="/watchlist/remove/{{ movie.id }}">
         <input type="hidden" name="next" value="/movie/{{ movie.id }}">

@@ -2,9 +2,6 @@
 {% macro movie_card(movie) -%}
 <a class="card" href="/movie/{{ movie.id }}">
   <div class="poster">
-    {% if movie.id in playable_ids %}
-    <span class="play-badge" title="เล่นได้ในเว็บนี้">▶</span>
-    {% endif %}
     {% if movie.poster_path %}
     <img src="https://image.tmdb.org/t/p/w200{{ movie.poster_path }}"
          alt="โปสเตอร์ {{ movie.title }}" loading="lazy">
