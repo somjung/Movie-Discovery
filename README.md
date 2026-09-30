@@ -1,15 +1,15 @@
 # ระบบค้นพบภาพยนตร์และสร้างรายการรับชม (Movie Discovery & Watchlist Builder)
 
-โครงงานปลายภาครายวิชา **CP352301 Script Programming (1/2569)** เป็นโปรแกรมภาษา Python แบบบรรทัดคำสั่ง (CLI) สำหรับค้นหาภาพยนตร์ที่คล้ายกับเรื่องที่ผู้ใช้ชื่นชอบ กรองและจัดอันดับผลลัพธ์ เก็บรายการรับชมส่วนตัว และส่งออกเป็นไฟล์ CSV
+โครงงานปลายภาครายวิชา **CP352301 Script Programming (1/2569)** พัฒนาด้วยภาษา Python — เริ่มจากโปรแกรมบรรทัดคำสั่ง (Sprint 1) ต่อด้วยระบบหลังบ้านจริง (Sprint 2) และปิดรอบด้วยเว็บแอปที่ใช้ตรรกะชุดเดียวกัน (Sprint 3) โดยแต่ละรอบพัฒนาต่อจากโค้ดของรอบก่อนหน้า
 
 > This product uses the TMDB API but is not endorsed or certified by TMDB.
 
 ## สถานะของ Sprint
 
-- **Sprint 1 (Front-End App Dev): เสร็จสมบูรณ์** โปรแกรม CLI แบบโต้ตอบมีข้อความต้อนรับ มีเมนูคำสั่ง รับและแปลงอินพุต (`.strip().lower()`) ตรวจสอบข้อมูลนำเข้าครบถ้วน และออกจากโปรแกรมอย่างสุภาพ ทั้งหมดสาธิตด้วยข้อมูลตัวอย่างที่ฝังอยู่ในโปรแกรม (ดูสเปกและ Definition of Done ใน `sprint1/script-final-project/PLAN.md`)
-- **Sprint 2 (Back-End): ขั้นถัดไป** เชื่อมต่อ TMDB API จริง เก็บข้อมูลลง SQLite และพัฒนาตรรกะการค้นหา/กรอง/จัดอันดับ โดยโมดูลพื้นฐานเตรียมไว้ใน `src/` พร้อมชุดทดสอบแล้ว (จะนำเสนอใน Sprint 2)
-- **Sprint 3:** รวมระบบทั้งหมดเข้าด้วยกัน
-- **Final:** DevOps/CI/CD และฟีเจอร์ AI
+- **Sprint 1 (Front-End App Dev): เสร็จสมบูรณ์** โปรแกรม CLI แบบโต้ตอบ — ข้อความต้อนรับ · เมนูคำสั่ง · รับและแปลงอินพุต (`.strip().lower()`) · ตรวจสอบข้อมูลนำเข้า · ออกจากโปรแกรมอย่างสุภาพ (สาธิตด้วยข้อมูลตัวอย่างที่ฝังในโปรแกรม) → โค้ด: `sprint1/script-final-project/`
+- **Sprint 2 (Back-End): เสร็จสมบูรณ์** เชื่อมต่อ TMDB จริง · เก็บข้อมูลลง SQLite · ค้นหา/กรอง/จัดอันดับ · รายการรับชม–รายการโปรด · ส่งออก CSV (เทสต์ 93 เคส) → โค้ด: `sprint2/script-final-project/`
+- **Sprint 3 (รวมระบบเป็นเว็บแอป): เสร็จสมบูรณ์** เว็บแอป Flask ใช้บริการและฐานข้อมูลชุดเดียวกับ CLI + Player เล่นหนังจริงในเบราว์เซอร์ (เทสต์รวม 142 เคส) → โค้ด: `sprint3/script-final-project/` ← **เวอร์ชันล่าสุด**
+- **Final:** DevOps / CI/CD และฟีเจอร์ AI
 
 ## ทีมและบทบาท
 
@@ -19,59 +19,71 @@
 | Coder | นายอเสข ปัญญาวงค์ |
 | Debugger / QA | _(รอเพิ่มชื่อ)_ |
 
-## ฟีเจอร์ Sprint 1 (CLI)
+## ฟีเจอร์ (เวอร์ชันล่าสุด)
 
-- คำสั่งหลัก: `search <ชื่อเรื่อง>` `discover <รหัส>` `watchlist add|list|clear` `help` และ `quit` / `exit` / `q` / `ออก`
-- รับคำสั่งได้ไม่ว่าพิมพ์ด้วยตัวพิมพ์เล็กหรือใหญ่ หรือมีช่องว่างหน้า-หลัง
-- ตรวจสอบข้อมูลนำเข้าพร้อมข้อความแจ้งเตือนเป็นภาษาไทย โดยโปรแกรมไม่หยุดทำงานแม้ผู้ใช้จะป้อนข้อมูลผิด (`try / except ValueError` ครอบคลุมถึง EOF และ Ctrl+C)
-- ครอบคลุมกรณีขอบเขตด้วยชุดทดสอบอัตโนมัติและการจำลองเซสชัน (ดู `PLAN.md`)
+**CLI**
 
-## เริ่มใช้งาน
+- ค้นหาภาพยนตร์ (TMDB จริง) · ดูรายละเอียด + หนังคล้ายกันพร้อมตัวกรอง (คะแนน · จำนวนโหวต · ปี · การเรียง · จำนวนผลลัพธ์)
+- รายการรับชม / รายการโปรด · ประวัติการค้นหา · ส่งออกเป็นไฟล์ CSV
+- ตรวจสอบข้อมูลนำเข้าพร้อมข้อความแจ้งเตือนภาษาไทย — โปรแกรมไม่หยุดทำงานแม้ผู้ใช้ป้อนข้อมูลผิด
 
-```bash
-cd sprint1/script-final-project
-python -m venv .venv
-.venv\Scripts\activate          # Windows (บน Linux/macOS ใช้ source .venv/bin/activate)
-pip install -r requirements.txt
-python -m src.app               # เริ่มโปรแกรม CLI
-```
+**เว็บแอป (Sprint 3)**
 
-## รายงาน Sprint 1 
-
-รายงานฉบับเต็มของ Sprint 1 (ข้อเสนอโครงการ แผนงาน การพัฒนา และผลลัพธ์) อยู่ในไฟล์ `sprint1/Sprint1_MovieDiscovery.ipynb` ถ้าต้องการรันซ้ำ ให้อัปโหลดไฟล์นี้ขึ้น Google Colab แล้วกด **Run all** ได้ทันที โดยใช้ข้อมูลตัวอย่างที่ฝังอยู่ในโปรแกรม (ไม่ต้องใช้คีย์ API)
+- ฟีเจอร์ชุดเดียวกับ CLI ผ่านหน้าเว็บ (ฐานข้อมูล `data/movies.db` ชุดเดียวกัน)
+- Player เล่นหนังในเบราว์เซอร์ (ภาพยนตร์สาธารณสมบัติ: Night of the Living Dead 1968)
+- ตัวนับ "รายการรับชม (N) · รายการโปรด (M)" จากฐานข้อมูลจริงบนทุกหน้า · หน้าแจ้งข้อผิดพลาดอย่างสุภาพ
 
 ## โครงสร้างโปรเจกต์
 
 ```
 .
 ├── README.md
-└── sprint1/
-    ├── Sprint1_MovieDiscovery.ipynb   # รายงาน Sprint 1 (pitch / แผนงาน / การพัฒนา / ผลลัพธ์)
-    └── script-final-project/          # โค้ดทั้งหมดของโปรเจกต์
-        ├── PLAN.md              # สเปก Sprint 1 + Definition of Done (ผลงานของ Planner)
-        ├── src/                 # โค้ดโปรแกรม (app, cli, sample_data + โมดูล Sprint 2)
-        ├── tests/               # ชุดทดสอบ pytest (CLI + โมดูลพื้นฐาน)
-        ├── data/                # ไฟล์ฐานข้อมูล SQLite (สร้างใน Sprint ถัดไป)
-        └── tools/               # สคริปต์ช่วยสร้าง notebook (build_notebook.py)
+├── .github/workflows/ci.yml         # CI: flake8 + pytest (ตรวจโค้ดเวอร์ชันล่าสุด)
+├── sprint1/                         # งานส่งรอบที่ 1
+│   ├── Sprint1_MovieDiscovery.ipynb # รายงาน Sprint 1 (ข้อเสนอ / แผนงาน / การพัฒนา / ผลลัพธ์)
+│   └── script-final-project/        # โค้ดเวอร์ชัน Sprint 1 (เทสต์ 40 เคส)
+├── sprint2/                         # งานส่งรอบที่ 2
+│   ├── PLAN.md · ARCHITECTURE.md    # แผนงาน + สถาปัตยกรรม Sprint 2
+│   └── script-final-project/        # โค้ดเวอร์ชัน Sprint 2 (TMDB จริง · SQLite — เทสต์ 93 เคส)
+└── sprint3/                         # งานส่งรอบที่ 3
+    ├── PLAN.md                      # แผนงาน + สเปกเว็บ/Player/Edge cases/DoD ของ Sprint 3
+    └── script-final-project/        # โค้ดเวอร์ชันล่าสุด (เว็บแอป + Player — เทสต์ 142 เคส)
 ```
+
+> แต่ละรอบ Sprint พัฒนาต่อจากโค้ดของรอบก่อนหน้า และเก็บ **โค้ดเวอร์ชันปิดรอบ** ไว้ในโฟลเดอร์ของรอบนั้น — โค้ดเวอร์ชันล่าสุดที่ใช้พัฒนาต่อคือ `sprint3/script-final-project/`
+
+## เริ่มใช้งาน
+
+```bash
+cd sprint3/script-final-project
+python -m venv .venv
+.venv\Scripts\activate          # Windows (บน Linux/macOS ใช้ source .venv/bin/activate)
+pip install -r requirements.txt
+python -m src.app               # เริ่มโปรแกรม CLI
+python -m web                   # เริ่มเว็บแอป (ต้องตั้งค่า TMDB_API_KEY สำหรับค้นหาจริง)
+```
+
+## รายงานและเอกสาร
+
+- รายงาน Sprint 1 ฉบับเต็ม: `sprint1/Sprint1_MovieDiscovery.ipynb` — รันซ้ำได้บน Google Colab ด้วยข้อมูลตัวอย่างที่ฝังในโปรแกรม (ไม่ต้องใช้คีย์ API)
+- แผนงาน + สถาปัตยกรรม Sprint 2: `sprint2/PLAN.md` · `sprint2/ARCHITECTURE.md`
+- แผนงาน + สเปกละเอียดของ Sprint 3: `sprint3/PLAN.md`
 
 ## ทดสอบและคุณภาพโค้ด
 
 ```bash
-cd sprint1/script-final-project
-python -m pytest -q      # ชุดทดสอบ (ไม่ต้องใช้อินเทอร์เน็ต)
-flake8 src tests         # ตรวจรูปแบบโค้ด (PEP 8)
+cd sprint3/script-final-project   # หรือโฟลเดอร์ Sprint ที่ต้องการตรวจ
+python -m pytest -q               # รันออฟไลน์ ไม่ต้องใช้คีย์ API
+flake8 src tests web scripts      # ตรวจรูปแบบโค้ด PEP 8 (Sprint 1–2 ใช้ flake8 src tests)
 ```
 
-CI: `.github/workflows/ci.yml` รัน flake8 และ pytest อัตโนมัติทุกครั้งที่ push (GitHub Actions)
+จำนวนเทสต์รายรอบ: **Sprint 1 = 40** · **Sprint 2 = 93** · **Sprint 3 = 142** (ผ่านทั้งหมด · flake8 สะอาดทุกรอบ)
+
+CI: `.github/workflows/ci.yml` รัน flake8 และ pytest อัตโนมัติทุกครั้งที่ push (ตรวจโค้ดเวอร์ชันล่าสุดที่ `sprint3/script-final-project/`)
 
 ## แผนงานถัดไป
 
-- [x] Sprint 1: ส่วนติดต่อผู้ใช้ CLI (รอบนี้)
-- [ ] Sprint 2: Back-End (TMDB จริง, SQLite, ค้นหา/กรอง/จัดอันดับ)
-- [ ] Sprint 3: รวมระบบทั้งหมดและเก็บเคสขอบเขตให้แน่นขึ้น
-- [ ] Final: DevOps, CI/CD, ฟีเจอร์ AI และเอกสาร/เดโมให้ครบชุด
-
-
-
-
+- [x] Sprint 1: ส่วนติดต่อผู้ใช้ CLI
+- [x] Sprint 2: Back-End (TMDB จริง · SQLite · ค้นหา/กรอง/จัดอันดับ)
+- [x] Sprint 3: รวมระบบเป็นเว็บแอป + Player
+- [ ] Final: DevOps · CI/CD · ฟีเจอร์ AI และเอกสาร/เดโมให้ครบชุด

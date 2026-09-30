@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: sprint1/script-final-project
+        working-directory: sprint3/script-final-project
     steps:
       - name: Checkout
         uses: actions/checkout@v4

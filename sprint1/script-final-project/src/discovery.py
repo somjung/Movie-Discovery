@@ -1,35 +1,20 @@
-"""Discovery logic: search, filter, sort, dedupe and rank movie candidates."""
-
-SORT_OPTIONS = ("rating", "votes", "year", "popularity")
+"""Discovery logic: fetch candidates for a seed movie, filter, dedupe, rank."""
 
 
 class DiscoveryService:
-    """Turns user queries and seed ids into ranked candidate lists.
+    """Turns a seed movie id into a ranked candidate list.
 
-    The API only supplies raw search/similar/recommended movies; which of
-    them survive the filters and in which order is decided here (project
-    logic), and everything shown to the user is kept in the local store.
+    The API only supplies raw similar/recommended movies; which of them
+    survive the filters and in which order is decided here (project logic).
     """
 
     def __init__(self, client, store):
-        """Keep the API client and the local store the service writes to."""
         self.client = client
         self.store = store
 
-    def search(self, query, limit=10):
-        """Search TMDB for ``query``, log it in ``searches``, return top hits."""
-        results = self.client.search_movies(query)
-        self.store.record_search(query, len(results))
-        return results[:limit]
-
     def find_similar(self, seed_id, min_rating=0.0, min_votes=0,
-                     year_from=None, year_to=None, limit=10, sort="rating"):
-        """Return the top ``limit`` candidates for the seed movie.
-
-        Candidates come from the similar + recommended endpoints (merged,
-        with duplicates removed), then are filtered, sorted by ``sort``
-        and cut down to ``limit`` before being saved to the store.
-        """
+                     year_from=None, year_to=None, limit=10):
+        """Return the top ``limit`` candidates for the seed movie."""
         candidates = {}
         for fetch in (self.client.get_similar, self.client.get_recommendations):
             for movie in fetch(seed_id):
@@ -40,7 +25,11 @@ class DiscoveryService:
             if self._passes_filters(movie, min_rating, min_votes,
                                     year_from, year_to)
         ]
-        kept.sort(key=self._sort_key(sort), reverse=True)
+        kept.sort(
+            key=lambda movie: (movie.get("vote_average") or 0,
+                               movie.get("vote_count") or 0),
+            reverse=True,
+        )
         kept = kept[:limit]
 
         for movie in kept:
@@ -48,23 +37,6 @@ class DiscoveryService:
             self.store.add_similar_link(seed_id, movie["id"],
                                         movie.get("vote_average"))
         return kept
-
-    @classmethod
-    def _sort_key(cls, sort):
-        """Pick the (primary, secondary) sort key; reject unknown names."""
-        if sort not in SORT_OPTIONS:
-            raise ValueError(f"unknown sort option: {sort!r}")
-        keys = {
-            "rating": lambda movie: (movie.get("vote_average") or 0,
-                                     movie.get("vote_count") or 0),
-            "votes": lambda movie: (movie.get("vote_count") or 0,
-                                    movie.get("vote_average") or 0),
-            "year": lambda movie: (cls.release_year(movie),
-                                   movie.get("vote_average") or 0),
-            "popularity": lambda movie: (movie.get("popularity") or 0,
-                                         movie.get("vote_average") or 0),
-        }
-        return keys[sort]
 
     @staticmethod
     def release_year(movie):
@@ -74,7 +46,6 @@ class DiscoveryService:
 
     @classmethod
     def _passes_filters(cls, movie, min_rating, min_votes, year_from, year_to):
-        """True when the movie satisfies every active filter."""
         if (movie.get("vote_average") or 0) < min_rating:
             return False
         if (movie.get("vote_count") or 0) < min_votes:
