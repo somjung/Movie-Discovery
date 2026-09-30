@@ -29,9 +29,9 @@ TITLE = """# รายงานผลการดำเนินงาน Sprint
 
 | บทบาท (หมุนเวียนตาม Sprint) | สมาชิกในทีม |
 |---|---|
-| Planner / Team Leader | [ชื่อนักศึกษา] |
+| Planner / Team Leader | นางสาวพลอยชมพู วงศ์กีรติกุล |
 | Coder | นายอเสข ปัญญาวงค์ |
-| Debugger / QA | [ชื่อนักศึกษา] |
+| Debugger / QA | นายนวมินทร์ คำจันทร์ |
 
 **Repository:** https://github.com/somjung/Movie-Discovery
 

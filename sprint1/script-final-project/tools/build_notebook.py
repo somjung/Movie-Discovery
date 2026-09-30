@@ -29,9 +29,9 @@ TITLE = """# รายงานผลการดำเนินงาน Sprint
 
 | บทบาท (หมุนเวียนตาม Sprint) | สมาชิกในทีม |
 |---|---|
-| Planner / Team Leader | [ชื่อนักศึกษา] |
-| Coder | นายอเสข ปัญญาวงค์ |
-| Debugger / QA | [ชื่อนักศึกษา] |
+| Planner / Team Leader | นางสาวพลอยชมพู วงศ์กีรติกุล |
+| Coder | นายนวมินทร์ คำจันทร์ |
+| Debugger / QA | นายอเสข ปัญญาวงค์ |
 
 **Repository:** https://github.com/somjung/Movie-Discovery
 
@@ -108,8 +108,8 @@ PITCH = """## ส่วนที่ 1: ข้อเสนอโครงกา�
 
 ### 8. บทบาทและความรับผิดชอบ (Roles & Responsibilities)
 
-- Project Manager / CI-CD Integrator: [ชื่อเพื่อนร่วมทีมคนที่ 1]
-- Automated Tester & QA: [ชื่อเพื่อนร่วมทีมคนที่ 2]
+- Project Manager / CI-CD Integrator: นางสาวพลอยชมพู วงศ์กีรติกุล
+- Automated Tester & QA: นายนวมินทร์ คำจันทร์
 - Core Developer(s): นายอเสข ปัญญาวงค์
 
 ### 9. คุณสมบัติหลัก (MVP Features)

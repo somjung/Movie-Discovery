@@ -88,9 +88,9 @@ Sprint นี้พัฒนาส่วน Business Logic และ Data Access
 
 | บทบาท | ผู้รับผิดชอบ |
 |---|---|
-| Planner / Team Leader | [ชื่อนักศึกษา] |
+| Planner / Team Leader | นางสาวพลอยชมพู วงศ์กีรติกุล |
 | Coder | นายอเสข ปัญญาวงค์ |
-| Debugger / QA | [ชื่อนักศึกษา] |
+| Debugger / QA | นายนวมินทร์ คำจันทร์ |
 
 ## 7. แผนการทดสอบ (Test Plan)
 
