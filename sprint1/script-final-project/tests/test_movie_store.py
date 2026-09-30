@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.movie_store import MovieStore
+from src.movie_store import CACHE_TTL_SECONDS, MovieStore
 
 
 @pytest.fixture()
@@ -58,3 +58,71 @@ def test_store_creates_parent_directory(tmp_path):
     db.add_movie(movie())
     db.close()
     assert nested.exists()
+
+
+# ---------- Sprint 2: watchlist removals, favorites, searches, cache ----------
+
+
+def test_watchlist_remove_returns_true_then_false(store):
+    store.add_movie(movie())
+    store.add_to_watchlist(101)
+    assert store.remove_from_watchlist(101) is True
+    assert store.remove_from_watchlist(101) is False
+    assert store.get_watchlist() == []
+
+
+def test_watchlist_clear_reports_removed_count(store):
+    store.add_movie(movie(101))
+    store.add_movie(movie(102, title="Bravo Horizon"))
+    store.add_to_watchlist(101)
+    store.add_to_watchlist(102)
+    assert store.clear_watchlist() == 2
+    assert store.clear_watchlist() == 0
+    assert store.get_watchlist() == []
+
+
+def test_favorites_roundtrip_and_note_refresh(store):
+    store.add_movie(movie())
+    assert store.is_in_favorites(101) is False
+    store.add_favorite(101, note="top pick")
+    assert store.is_in_favorites(101) is True
+    rows = store.get_favorites()
+    assert rows[0]["title"] == "Alpha Signal"
+    assert rows[0]["note"] == "top pick"
+    store.add_favorite(101, note="changed")
+    assert store.get_favorites()[0]["note"] == "changed"
+    assert store.remove_favorite(101) is True
+    assert store.remove_favorite(101) is False
+
+
+def test_recent_searches_newest_first_with_limit(store):
+    store.record_search("alpha", 3)
+    store.record_search("bravo", 5)
+    store.record_search("cobalt", 0)
+    rows = store.get_recent_searches(2)
+    assert [row["query"] for row in rows] == ["cobalt", "bravo"]
+    assert rows[0]["result_count"] == 0
+    assert rows[0]["searched_at"]
+    assert len(store.get_recent_searches()) == 3
+
+
+def test_cache_roundtrip_and_expiry(store):
+    assert store.get_cached("k") is None
+    store.save_cached("k", '{"a": 1}')
+    assert store.get_cached("k") == '{"a": 1}'
+    store.conn.execute(
+        "UPDATE api_cache SET fetched_at = datetime('now', '-2 days') "
+        "WHERE cache_key = 'k'"
+    )
+    store.conn.commit()
+    assert store.get_cached("k") is None
+
+
+def test_cache_save_overwrites_previous_payload(store):
+    store.save_cached("k", "old")
+    store.save_cached("k", "new")
+    assert store.get_cached("k") == "new"
+
+
+def test_cache_ttl_constant_is_24_hours():
+    assert CACHE_TTL_SECONDS == 24 * 60 * 60

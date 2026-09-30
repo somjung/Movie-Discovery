@@ -6,6 +6,18 @@ TMDB_BASE_URL = "https://api.themoviedb.org/3"
 DEFAULT_LANGUAGE = "en-US"
 DEFAULT_TIMEOUT = 10
 
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def get_data_dir():
+    """Folder for runtime data: the SQLite database and the CSV exports."""
+    return os.path.join(PROJECT_ROOT, "data")
+
+
+def get_db_path():
+    """Path of the project's SQLite file (``data/movies.db`` under the root)."""
+    return os.path.join(get_data_dir(), "movies.db")
+
 
 def get_api_key():
     """Return the TMDB API key from the environment.
