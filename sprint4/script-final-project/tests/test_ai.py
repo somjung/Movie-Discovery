@@ -13,6 +13,7 @@ from src.config import AI_BASE_URL, AI_MODEL
 from src.discovery import DiscoveryService
 from src.movie_store import MovieStore
 from src.sample_data import SAMPLE_MOVIES
+from web import create_app
 
 
 def make_client(session, **kwargs):
@@ -369,3 +370,128 @@ def test_describe_ai_error_no_picks():
 def test_describe_ai_error_incomplete():
     error = AiError("the AI summary reply is incomplete")
     assert "ผิดรูปแบบ" in describe_ai_error(error)
+
+# ---------- web: AI assistant page ----------
+
+
+def make_web(tmp_path, store, tmdb_client, ai_client):
+    app = create_app(client=tmdb_client, store=store,
+                     data_dir=str(tmp_path), ai_client=ai_client)
+    return app.test_client()
+
+
+def seed_watchlist(store, movie_id=101):
+    store.add_movie(dict(SAMPLE_MOVIES[movie_id - 101]))
+    store.add_to_watchlist(movie_id)
+
+
+def test_ai_page_lists_seed_options(tmp_path, store):
+    seed_watchlist(store)
+    resp = make_web(tmp_path, store, FakeTmdbClient(), FakeAiClient()).get(
+        "/ai/recommend")
+    html = resp.get_data(as_text=True)
+    assert resp.status_code == 200
+    assert "ผู้ช่วยแนะนำ" in html
+    assert "Alpha Signal" in html  # watchlist entry in the dropdown
+
+
+def test_ai_page_empty_state_points_to_search(tmp_path, store):
+    resp = make_web(tmp_path, store, FakeTmdbClient(), FakeAiClient()).get(
+        "/ai/recommend")
+    html = resp.get_data(as_text=True)
+    assert "ยังไม่มีเรื่องในรายการ" in html
+    assert "/search" in html
+
+
+def test_ai_submit_redirects_to_results(tmp_path, store):
+    seed_watchlist(store)
+    client = make_web(tmp_path, store, FakeTmdbClient(),
+                      FakeAiClient(reply={"picks": [
+                          {"id": 103, "reason": "สนุกมาก"}]}))
+    resp = client.post("/ai/recommend", data={"base": "101", "mood": "ตลก"})
+    assert resp.status_code == 303
+    location = resp.headers["Location"]
+    assert location.startswith("/ai/recommend?base=101&go=1")
+    html = client.get(location).get_data(as_text=True)
+    assert "สนุกมาก" in html
+    assert "Cobalt Night" in html
+
+
+def test_ai_results_add_roundtrip_uses_cache(tmp_path, store):
+    seed_watchlist(store)
+    fake = FakeAiClient(reply={"picks": [{"id": 103, "reason": "สนุก"}]})
+    client = make_web(tmp_path, store, FakeTmdbClient(), fake)
+    results_url = "/ai/recommend?base=101&go=1"
+    client.get(results_url)
+    resp = client.post("/watchlist/add/103",
+                       data={"next": results_url}, follow_redirects=True)
+    html = resp.get_data(as_text=True)
+    assert "เพิ่มเข้าสู่รายการรับชมแล้ว" in html
+    assert "สนุก" in html  # picks still shown (cache, not a new AI call)
+    assert len(fake.calls) == 1
+
+
+def test_ai_no_key_shows_setup_and_fallback(tmp_path, store):
+    seed_watchlist(store)
+    client = make_web(tmp_path, store, FakeTmdbClient(), None)
+    resp = client.get("/ai/recommend?base=101&go=1")
+    html = resp.get_data(as_text=True)
+    assert resp.status_code == 200
+    assert "DEEPSEEK_API_KEY" in html
+    assert "หนังคล้ายพื้นฐาน" in html
+    assert "Cobalt Night" in html  # top-rated fake candidate
+
+
+def test_ai_submit_without_seed_asks_again(tmp_path, store):
+    seed_watchlist(store)
+    client = make_web(tmp_path, store, FakeTmdbClient(), FakeAiClient())
+    resp = client.post("/ai/recommend", data={"base": "", "mood": "x"})
+    assert resp.status_code == 303
+    assert "err=base" in resp.headers["Location"]
+    page = client.get(resp.headers["Location"])
+    assert "เลือกหนังตั้งต้น" in page.get_data(as_text=True)
+
+
+def test_ai_query_base_from_movie_page_preselects(tmp_path, store):
+    store.add_movie(dict(SAMPLE_MOVIES[4]))  # stored, not on either list
+    resp = make_web(tmp_path, store, FakeTmdbClient(), FakeAiClient()).get(
+        "/ai/recommend?base=105")
+    html = resp.get_data(as_text=True)
+    assert "Emerald Run" in html
+    assert "selected" in html
+
+
+def test_ai_unknown_seed_id_polite_notice(tmp_path, store):
+    resp = make_web(tmp_path, store, FakeTmdbClient(), FakeAiClient()).get(
+        "/ai/recommend?base=999&go=1")
+    assert "ไม่พบหนังรหัส 999" in resp.get_data(as_text=True)
+
+
+def test_ai_mood_truncated_with_note(tmp_path, store):
+    seed_watchlist(store)
+    client = make_web(tmp_path, store, FakeTmdbClient(),
+                      FakeAiClient(reply={"picks": [
+                          {"id": 103, "reason": "ok"}]}))
+    resp = client.get("/ai/recommend?base=101&go=1&mood=" + "a" * 260)
+    html = resp.get_data(as_text=True)
+    assert "ยาวเกิน 200 ตัวอักษร" in html
+    assert "a" * 200 in html  # the truncated mood is echoed back
+
+
+def test_ai_error_shows_polite_message(tmp_path, store):
+    seed_watchlist(store)
+    fake = FakeAiClient(error=AiError("the AI request timed out"))
+    resp = make_web(tmp_path, store, FakeTmdbClient(), fake).get(
+        "/ai/recommend?base=101&go=1")
+    assert "หมดเวลา" in resp.get_data(as_text=True)
+
+
+def test_ai_reason_is_escaped(tmp_path, store):
+    seed_watchlist(store)
+    fake = FakeAiClient(reply={"picks": [
+        {"id": 103, "reason": "<script>alert(1)</script>"}]})
+    resp = make_web(tmp_path, store, FakeTmdbClient(), fake).get(
+        "/ai/recommend?base=101&go=1")
+    html = resp.get_data(as_text=True)
+    assert "<script>alert(1)</script>" not in html
+    assert "&lt;script&gt;" in html

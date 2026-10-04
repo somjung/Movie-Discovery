@@ -6,10 +6,13 @@ pages (cross-list stars, CSV download) and the search history.
 """
 
 import os
+from urllib.parse import quote
 
 from flask import (Blueprint, abort, g, redirect, render_template, request,
                    send_file)
 
+from src.ai_advisor import MAX_MOOD_CHARS
+from src.ai_client import AiError, describe_ai_error
 from src.cli import CLI, LIST_LABELS
 from src.discovery import SORT_OPTIONS
 from src.exporter import Exporter, ExportError
@@ -408,3 +411,134 @@ def favorites_add(tmdb_id):
 def favorites_remove(tmdb_id):
     """Remove one movie from favorites, then return to the page."""
     return _remove_from_list("favorites", tmdb_id)
+
+# ---------- Sprint 4: AI assistant ----------
+
+
+def _ai_seed_options(store):
+    """Seed options for the AI page: watchlist + favorites (unique ids)."""
+    options = {}
+    for rows in (store.get_watchlist(), store.get_favorites()):
+        for row in rows:
+            movie_id = row["tmdb_id"]
+            if movie_id is None or movie_id in options:
+                continue
+            options[movie_id] = {
+                "id": movie_id,
+                "title": row["title"] or f"รหัส {movie_id}",
+                "year": (row["release_date"] or "")[:4],
+            }
+    return list(options.values())
+
+
+def _fallback_picks(candidates, limit=5):
+    """Top candidates by rating — shown when AI is not configured."""
+    ranked = sorted(candidates,
+                    key=lambda movie: (movie.get("vote_average") or 0),
+                    reverse=True)
+    return ranked[:limit]
+
+
+@bp.get("/ai/recommend")
+def ai_recommend():
+    """AI assistant: pick a seed movie + a mood, show AI picks.
+
+    Results live on this GET URL (``?base=..&go=1``) so the add-to-list
+    buttons can return here; a repeat visit is served from the advisor
+    cache instead of costing another AI call.
+    """
+    services = get_services()
+    store = services["store"]
+    notices = []
+    notice = _notice_from_args()
+    if notice:
+        notices.append(notice)
+    if request.args.get("err") == "base":
+        notices.append("เลือกหนังตั้งต้นจากรายการก่อนกดปุ่ม")
+
+    ai_missing = services["ai_client"] is None
+    mood = (request.args.get("mood") or "").strip()
+    if len(mood) > MAX_MOOD_CHARS:
+        mood = mood[:MAX_MOOD_CHARS]
+        notices.append(
+            f"โจทย์ยาวเกิน {MAX_MOOD_CHARS} ตัวอักษร — ใช้เฉพาะส่วนแรกให้")
+
+    options = _ai_seed_options(store)
+    selected_id = None
+    selected_title = None
+    base_raw = (request.args.get("base") or "").strip()
+    if base_raw.isdigit() and len(base_raw) <= 10:
+        selected_id = int(base_raw)
+        for option in options:
+            if option["id"] == selected_id:
+                selected_title = option["title"]
+                break
+        if selected_title is None:
+            stored = store.get_movie(selected_id)
+            if stored is not None:
+                selected_title = (stored.get("title")
+                                  or f"รหัส {selected_id}")
+                options.insert(0, {
+                    "id": selected_id,
+                    "title": selected_title,
+                    "year": (stored.get("release_date") or "")[:4],
+                })
+            else:
+                notices.append(
+                    f"ไม่พบหนังรหัส {selected_id} ในเครื่อง — "
+                    "เลือกเรื่องตั้งต้นจากรายการด้านล่าง")
+                selected_id = None
+
+    results = None
+    fallback = False
+    error_text = None
+    if request.args.get("go") == "1" and selected_id is not None:
+        if services["discovery"] is None:
+            notices.append(
+                "ยังไม่ได้ตั้งค่าคีย์ TMDB — ฟีเจอร์แนะนำต้องใช้หนังคล้าย "
+                "จาก TMDB (กำหนด TMDB_API_KEY แล้วเปิดเซิร์ฟเวอร์ใหม่)")
+        else:
+            try:
+                if ai_missing:
+                    candidates = services["advisor"].suggest_candidates(
+                        selected_id)
+                    results = _fallback_picks(candidates)
+                    fallback = True
+                else:
+                    results = services["advisor"].recommend(
+                        selected_id, mood)
+            except AiError as exc:
+                error_text = describe_ai_error(exc)
+
+    results_url = ""
+    if selected_id is not None:
+        results_url = f"/ai/recommend?base={selected_id}&go=1"
+        if mood:
+            results_url += f"&mood={quote(mood, safe='')}"
+
+    return render_template(
+        "ai_recommend.html",
+        options=options,
+        selected_id=selected_id,
+        selected_title=selected_title,
+        mood=mood,
+        results=results,
+        fallback=fallback,
+        error_text=error_text,
+        results_url=results_url,
+        ai_missing=ai_missing,
+        notices=notices,
+    )
+
+
+@bp.post("/ai/recommend")
+def ai_recommend_submit():
+    """Validate the seed choice, then load the results URL (PRG)."""
+    base_raw = (request.form.get("base") or "").strip()
+    if not base_raw.isdigit() or len(base_raw) > 10:
+        return redirect(_with("/ai/recommend", "err=base"), code=303)
+    mood = (request.form.get("mood") or "").strip()
+    target = f"/ai/recommend?base={int(base_raw)}&go=1"
+    if mood:
+        target = f"{target}&mood={quote(mood, safe='')}"
+    return redirect(target, code=303)

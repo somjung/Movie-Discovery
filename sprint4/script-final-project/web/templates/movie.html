@@ -64,6 +64,7 @@
         <button class="btn" type="submit">+ เพิ่มเข้ารายการโปรด</button>
       </form>
       {% endif %}
+      <a class="btn ghost" href="/ai/recommend?base={{ movie.id }}">ใช้เรื่องนี้เป็นฐาน (AI)</a>
     </div>
     {% if in_watchlist or in_favorites %}
     <p class="state-line">

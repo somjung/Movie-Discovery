@@ -10,6 +10,8 @@ import sqlite3
 
 from flask import Flask, g, render_template
 
+from src.ai_advisor import AiAdvisor
+from src.ai_client import AiClient
 from src.cli import CLI
 from src.config import get_data_dir, get_db_path
 from src.discovery import DiscoveryService
@@ -29,8 +31,10 @@ DB_HELP = (
 )
 
 
-def create_app(client=None, store=None, data_dir=None, db_path=None):
-    """Build the web app; inject ``client``/``store`` to run offline (tests).
+def create_app(client=None, store=None, data_dir=None, db_path=None,
+               ai_client=None):
+    """Build the web app; inject ``client``/``store``/``ai_client`` to
+    run offline (tests).
 
     Production mode builds one service bundle per request, each with its
     own SQLite connection: Python's sqlite3 refuses a connection created
@@ -56,31 +60,47 @@ def create_app(client=None, store=None, data_dir=None, db_path=None):
 
     def build_services():
         """Create the service bundle for one request."""
-        if store is not None or client is not None:
+        if store is not None or client is not None or ai_client is not None:
             test_store = store if store is not None else MovieStore(":memory:")
+            test_discovery = (DiscoveryService(client, test_store)
+                              if client is not None else None)
             return {
                 "store": test_store,
                 "client": client,
-                "discovery": (DiscoveryService(client, test_store)
-                              if client is not None else None),
+                "discovery": test_discovery,
                 "builder": WatchlistBuilder(test_store, client),
+                "ai_client": ai_client,
+                "ai_missing": ai_client is None,
+                "advisor": AiAdvisor(ai_client, test_discovery, test_store),
                 "key_missing": client is None,
                 "data_dir": app.config["DATA_DIR"],
                 "close_store": False,
             }
         request_store = MovieStore(app.config["DB_PATH"])
         request_client = None
+        request_discovery = None
         key_missing = False
         try:
             request_client = TmdbClient(store=request_store)
+            request_discovery = DiscoveryService(request_client,
+                                                 request_store)
         except RuntimeError:
+            request_client = None
             key_missing = True
+        request_ai = None
+        try:
+            request_ai = AiClient()
+        except RuntimeError:
+            pass  # AI stays unconfigured; its pages degrade politely
         return {
             "store": request_store,
             "client": request_client,
-            "discovery": (DiscoveryService(request_client, request_store)
-                          if request_client is not None else None),
+            "discovery": request_discovery,
             "builder": WatchlistBuilder(request_store, request_client),
+            "ai_client": request_ai,
+            "ai_missing": request_ai is None,
+            "advisor": AiAdvisor(request_ai, request_discovery,
+                                 request_store),
             "key_missing": key_missing,
             "data_dir": app.config["DATA_DIR"],
             "close_store": True,
