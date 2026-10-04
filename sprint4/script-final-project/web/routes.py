@@ -312,6 +312,21 @@ def movie(tmdb_id):
         except TmdbError as exc:
             similar_error = CLI.describe_tmdb_error(exc)
 
+    summary = None
+    summary_error = None
+    if request.args.get("summary") == "1":
+        if services["ai_client"] is None:
+            summary_error = (
+                "ยังไม่ได้ตั้งค่าคีย์ AI — กำหนดตัวแปรสภาพแวดล้อม "
+                "DEEPSEEK_API_KEY แล้วเปิดเซิร์ฟเวอร์ใหม่ "
+                "(หน้าอื่น ๆ ยังใช้ได้ตามปกติ · สร้างคีย์ได้ที่ "
+                "platform.deepseek.com)")
+        else:
+            try:
+                summary = services["advisor"].summarize(movie)
+            except AiError as exc:
+                summary_error = describe_ai_error(exc)
+
     year = (movie.get("release_date") or "")[:4] or None
     return render_template(
         "movie.html",
@@ -327,6 +342,8 @@ def movie(tmdb_id):
         notices=notices,
         similar=similar,
         similar_error=similar_error,
+        summary=summary,
+        summary_error=summary_error,
         in_watchlist=store.is_in_watchlist(tmdb_id),
         in_favorites=store.is_in_favorites(tmdb_id),
     )

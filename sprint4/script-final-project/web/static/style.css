@@ -352,3 +352,22 @@ a.nav-stat:hover { text-decoration: underline; }
 
 .ai-card form { margin-top: 8px; }
 
+/* --- AI summary box (movie page) --- */
+
+.ai-summary {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-top: 18px;
+}
+
+.ai-summary h2 { color: var(--navy); font-size: 18px; margin: 0 0 8px; }
+
+.summary-text { line-height: 1.65; margin: 0 0 10px; }
+
+.summary-why-title { font-weight: 600; margin: 0 0 4px; }
+
+.summary-why { margin: 0 0 4px; padding-left: 22px; }
+
+.summary-why li { margin: 4px 0; line-height: 1.5; }

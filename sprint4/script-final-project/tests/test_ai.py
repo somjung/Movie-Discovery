@@ -495,3 +495,55 @@ def test_ai_reason_is_escaped(tmp_path, store):
     html = resp.get_data(as_text=True)
     assert "<script>alert(1)</script>" not in html
     assert "&lt;script&gt;" in html
+
+
+# ---------- web: Thai summary on the movie page ----------
+
+
+SUMMARY_REPLY = {
+    "summary": "เรื่องนี้สนุกและน่าติดตามมาก",
+    "why": ["เหตุผลหนึ่ง", "เหตุผลสอง", "เหตุผลสาม"],
+}
+
+
+def test_movie_page_has_summary_button(tmp_path, store):
+    resp = make_web(tmp_path, store, FakeTmdbClient(), FakeAiClient()).get(
+        "/movie/101")
+    html = resp.get_data(as_text=True)
+    assert "สรุปภาษาไทย (AI)" in html
+    assert "/movie/101?summary=1" in html
+
+
+def test_movie_summary_renders_box(tmp_path, store):
+    fake = FakeAiClient(reply=dict(SUMMARY_REPLY))
+    resp = make_web(tmp_path, store, FakeTmdbClient(), fake).get(
+        "/movie/101?summary=1")
+    html = resp.get_data(as_text=True)
+    assert resp.status_code == 200
+    assert "เรื่องนี้สนุกและน่าติดตามมาก" in html
+    assert "เหตุผลหนึ่ง" in html and "เหตุผลสาม" in html
+    assert "ทำไมควรดู" in html
+
+
+def test_movie_summary_second_view_uses_cache(tmp_path, store):
+    fake = FakeAiClient(reply=dict(SUMMARY_REPLY))
+    client = make_web(tmp_path, store, FakeTmdbClient(), fake)
+    first = client.get("/movie/101?summary=1").get_data(as_text=True)
+    second = client.get("/movie/101?summary=1").get_data(as_text=True)
+    assert "เรื่องนี้สนุก" in first and "เรื่องนี้สนุก" in second
+    assert len(fake.calls) == 1
+
+
+def test_movie_summary_without_key_shows_setup(tmp_path, store):
+    resp = make_web(tmp_path, store, FakeTmdbClient(), None).get(
+        "/movie/101?summary=1")
+    assert "DEEPSEEK_API_KEY" in resp.get_data(as_text=True)
+
+
+def test_movie_summary_error_shows_retry(tmp_path, store):
+    fake = FakeAiClient(error=AiError("the AI request timed out"))
+    resp = make_web(tmp_path, store, FakeTmdbClient(), fake).get(
+        "/movie/101?summary=1")
+    html = resp.get_data(as_text=True)
+    assert "หมดเวลา" in html
+    assert "ลองใหม่" in html

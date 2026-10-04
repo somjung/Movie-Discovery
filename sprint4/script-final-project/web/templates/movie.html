@@ -65,6 +65,7 @@
       </form>
       {% endif %}
       <a class="btn ghost" href="/ai/recommend?base={{ movie.id }}">ใช้เรื่องนี้เป็นฐาน (AI)</a>
+      <a class="btn ghost" href="/movie/{{ movie.id }}?summary=1">สรุปภาษาไทย (AI)</a>
     </div>
     {% if in_watchlist or in_favorites %}
     <p class="state-line">
@@ -74,6 +75,24 @@
     {% endif %}
   </div>
 </section>
+
+{% if summary or summary_error %}
+<section class="ai-summary">
+  <h2>สรุปภาษาไทยจาก AI</h2>
+  {% if summary_error %}
+  <p class="notice">{{ summary_error }}</p>
+  <p><a class="btn tiny" href="/movie/{{ movie.id }}?summary=1">ลองใหม่</a></p>
+  {% else %}
+  <p class="summary-text">{{ summary.summary }}</p>
+  {% if summary.why %}
+  <p class="summary-why-title">ทำไมควรดู</p>
+  <ul class="summary-why">
+    {% for item in summary.why %}<li>{{ item }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+  {% endif %}
+</section>
+{% endif %}
 
 <section class="similar">
   <h2>หนังคล้ายกัน</h2>
