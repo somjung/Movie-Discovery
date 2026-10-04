@@ -6,6 +6,10 @@ TMDB_BASE_URL = "https://api.themoviedb.org/3"
 DEFAULT_LANGUAGE = "en-US"
 DEFAULT_TIMEOUT = 10
 
+AI_BASE_URL = "https://api.deepseek.com"
+AI_MODEL = "deepseek-flash"
+AI_TIMEOUT = 60
+
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -30,5 +34,20 @@ def get_api_key():
             "TMDB_API_KEY is not set. Create a free key at "
             "https://developer.themoviedb.org/ and export it, e.g. "
             "set TMDB_API_KEY=your_key_here"
+        )
+    return api_key
+
+
+def get_ai_api_key():
+    """Return the AI provider (DeepSeek) API key from the environment.
+
+    Raises RuntimeError with a helpful message when the key is missing.
+    """
+    api_key = os.environ.get("DEEPSEEK_API_KEY", "").strip()
+    if not api_key:
+        raise RuntimeError(
+            "DEEPSEEK_API_KEY is not set. Create a key at "
+            "https://platform.deepseek.com/ and set it, e.g. "
+            "set DEEPSEEK_API_KEY=your_key_here"
         )
     return api_key
