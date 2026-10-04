@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Movie Discovery{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="{{ url_for('main.home') }}">Movie Discovery</a>
+  <nav>
+    <a class="nav-stat" href="/">หน้าแรก</a>
+    <a class="nav-stat" href="/watchlist">รายการรับชม ({{ nav_watchlist }})</a>
+    <a class="nav-stat" href="/favorites">รายการโปรด ({{ nav_favorites }})</a>
+    <a class="nav-stat" href="/history">ประวัติ</a>
+  </nav>
+</header>
+
+{% if key_missing %}
+<div class="banner">
+  ยังไม่ได้ตั้งค่าคีย์ TMDB — กำหนดตัวแปรสภาพแวดล้อม <code>TMDB_API_KEY</code>
+  แล้วเปิดเซิร์ฟเวอร์ใหม่ · สร้างคีย์ฟรีได้ที่ developer.themoviedb.org —
+  ส่วนรายการรับชม · รายการโปรด · ประวัติ ใช้งานได้ตามปกติ
+</div>
+{% endif %}
+
+<main>
+{% block content %}{% endblock %}
+</main>
+
+<footer class="footer">{{ tmdb_attribution }}</footer>
+</body>
+</html>
