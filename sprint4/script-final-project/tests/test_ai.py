@@ -534,10 +534,14 @@ def test_movie_summary_second_view_uses_cache(tmp_path, store):
     assert len(fake.calls) == 1
 
 
-def test_movie_summary_without_key_shows_setup(tmp_path, store):
-    resp = make_web(tmp_path, store, FakeTmdbClient(), None).get(
-        "/movie/101?summary=1")
-    assert "DEEPSEEK_API_KEY" in resp.get_data(as_text=True)
+def test_movie_summary_keyless_banner_hides_button(tmp_path, store):
+    client = make_web(tmp_path, store, FakeTmdbClient(), None)
+    html = client.get("/movie/101").get_data(as_text=True)
+    assert "DEEPSEEK_API_KEY" in html  # setup banner (like the TMDB one)
+    assert "สรุปภาษาไทย (AI)" not in html  # summary button stays hidden
+    direct = client.get("/movie/101?summary=1")
+    assert direct.status_code == 200
+    assert "ยังไม่ได้ตั้งค่าคีย์ AI" in direct.get_data(as_text=True)
 
 
 def test_movie_summary_error_shows_retry(tmp_path, store):
@@ -546,4 +550,111 @@ def test_movie_summary_error_shows_retry(tmp_path, store):
         "/movie/101?summary=1")
     html = resp.get_data(as_text=True)
     assert "หมดเวลา" in html
+    assert "ลองใหม่" in html
+    assert store.get_cached("ai:summary:101") is None  # failures never cache
+
+
+# ---------- edge-case sweep: complete coverage of plan section 6 ----------
+
+
+def test_describe_ai_error_rate_limit():
+    error = AiError("the AI rate limit was hit (HTTP 429) - slow down")
+    assert "ถี่เกินไป" in describe_ai_error(error)
+
+
+def test_describe_ai_error_network():
+    error = AiError("the AI request failed: connection reset")
+    assert "อินเทอร์เน็ต" in describe_ai_error(error)
+
+
+def test_recommend_error_leaves_no_cache(store):
+    fake = FakeAiClient(error=AiError("the AI request timed out"))
+    advisor = build_advisor(store, fake)
+    with pytest.raises(AiError):
+        advisor.recommend(27205)
+    assert store.get_cached(AiAdvisor._recommend_cache_key(27205, "")) is None
+
+
+def test_summarize_error_leaves_no_cache(store):
+    fake = FakeAiClient(error=AiError("the AI request timed out"))
+    advisor = build_advisor(store, fake)
+    with pytest.raises(AiError):
+        advisor.summarize(dict(SAMPLE_MOVIES[0]))
+    assert store.get_cached("ai:summary:101") is None
+
+
+def test_recommend_empty_mood_works(store):
+    fake = FakeAiClient(reply={"picks": [{"id": 103, "reason": "ok"}]})
+    picks = build_advisor(store, fake).recommend(27205, mood="")
+    assert picks[0]["id"] == 103
+    assert "(none" in fake.calls[0]["user"]
+
+
+def test_ai_401_shows_key_message(tmp_path, store):
+    seed_watchlist(store)
+    fake = FakeAiClient(error=AiError(
+        "the AI provider rejected the API key (HTTP 401)"))
+    resp = make_web(tmp_path, store, FakeTmdbClient(), fake).get(
+        "/ai/recommend?base=101&go=1")
+    assert "คีย์ AI" in resp.get_data(as_text=True)
+
+
+def test_ai_429_shows_rate_limit_message(tmp_path, store):
+    seed_watchlist(store)
+    fake = FakeAiClient(error=AiError(
+        "the AI rate limit was hit (HTTP 429) - slow down"))
+    resp = make_web(tmp_path, store, FakeTmdbClient(), fake).get(
+        "/ai/recommend?base=101&go=1")
+    assert "ถี่เกินไป" in resp.get_data(as_text=True)
+
+
+def test_ai_only_unknown_ids_polite_message(tmp_path, store):
+    seed_watchlist(store)
+    fake = FakeAiClient(reply={"picks": [{"id": 999, "reason": "x"}]})
+    resp = make_web(tmp_path, store, FakeTmdbClient(), fake).get(
+        "/ai/recommend?base=101&go=1")
+    assert "คัดเลือกไม่ได้" in resp.get_data(as_text=True)
+
+
+def test_ai_no_candidates_polite_message(tmp_path, store):
+    seed_watchlist(store)
+    bare = FakeTmdbClient(similar=[], recommendations=[])
+    resp = make_web(tmp_path, store, bare, FakeAiClient()).get(
+        "/ai/recommend?base=101&go=1")
+    assert "ยังมีข้อมูลไม่พอจะแนะนำ" in resp.get_data(as_text=True)
+
+
+def test_ai_empty_mood_via_web_works(tmp_path, store):
+    seed_watchlist(store)
+    client = make_web(tmp_path, store, FakeTmdbClient(),
+                      FakeAiClient(reply={"picks": [
+                          {"id": 103, "reason": "สนุก"}]}))
+    resp = client.post("/ai/recommend", data={"base": "101"})
+    assert resp.status_code == 303
+    assert resp.headers["Location"] == "/ai/recommend?base=101&go=1"
+    html = client.get(resp.headers["Location"]).get_data(as_text=True)
+    assert "สนุก" in html
+
+
+def test_ai_mood_handles_emoji_thai_and_code(tmp_path, store):
+    seed_watchlist(store)
+    client = make_web(tmp_path, store, FakeTmdbClient(),
+                      FakeAiClient(reply={"picks": [
+                          {"id": 103, "reason": "ok"}]}))
+    mood = "อยากดูหนังไทย 🇹🇭 ตลกๆ <b>hello</b>"
+    resp = client.get("/ai/recommend",
+                      query_string={"base": "101", "go": "1", "mood": mood})
+    html = resp.get_data(as_text=True)
+    assert resp.status_code == 200
+    assert "🇹🇭" in html
+    assert "&lt;b&gt;" in html
+    assert "<b>hello</b>" not in html
+
+
+def test_movie_summary_bad_reply_message(tmp_path, store):
+    fake = FakeAiClient(error=AiError("the AI reply is not valid JSON"))
+    resp = make_web(tmp_path, store, FakeTmdbClient(), fake).get(
+        "/movie/101?summary=1")
+    html = resp.get_data(as_text=True)
+    assert "ผิดรูปแบบ" in html
     assert "ลองใหม่" in html

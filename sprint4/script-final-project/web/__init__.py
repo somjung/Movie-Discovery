@@ -161,12 +161,14 @@ def create_app(client=None, store=None, data_dir=None, db_path=None,
                 "nav_watchlist": 0,
                 "nav_favorites": 0,
                 "key_missing": False,
+                "ai_missing": False,
                 "tmdb_attribution": TMDB_ATTRIBUTION,
             }
         return {
             "nav_watchlist": len(bundle["store"].get_watchlist()),
             "nav_favorites": len(bundle["store"].get_favorites()),
             "key_missing": bundle["key_missing"],
+            "ai_missing": bundle["ai_missing"],
             "tmdb_attribution": TMDB_ATTRIBUTION,
         }
 

@@ -65,7 +65,9 @@
       </form>
       {% endif %}
       <a class="btn ghost" href="/ai/recommend?base={{ movie.id }}">ใช้เรื่องนี้เป็นฐาน (AI)</a>
+      {% if not ai_missing %}
       <a class="btn ghost" href="/movie/{{ movie.id }}?summary=1">สรุปภาษาไทย (AI)</a>
+      {% endif %}
     </div>
     {% if in_watchlist or in_favorites %}
     <p class="state-line">

@@ -344,6 +344,7 @@ def movie(tmdb_id):
         similar_error=similar_error,
         summary=summary,
         summary_error=summary_error,
+        ai_missing=services["ai_client"] is None,
         in_watchlist=store.is_in_watchlist(tmdb_id),
         in_favorites=store.is_in_favorites(tmdb_id),
     )

@@ -26,6 +26,14 @@
 </div>
 {% endif %}
 
+{% if ai_missing %}
+<div class="banner">
+  ยังไม่ได้ตั้งค่าคีย์ AI — กำหนดตัวแปรสภาพแวดล้อม <code>DEEPSEEK_API_KEY</code>
+  แล้วเปิดเซิร์ฟเวอร์ใหม่ · โหมดไม่มีคีย์: หน้า “ผู้ช่วยแนะนำ” แสดงหนังคล้ายพื้นฐาน
+  และปุ่มสรุปภาษาไทยจะถูกซ่อน
+</div>
+{% endif %}
+
 <main>
 {% block content %}{% endblock %}
 </main>
