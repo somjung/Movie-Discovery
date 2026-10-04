@@ -57,3 +57,34 @@ class FakeResponse:
         if isinstance(self._payload, Exception):
             raise self._payload
         return self._payload
+
+
+class FakeAiClient:
+    """Offline stand-in for AiClient with scripted JSON replies.
+
+    Each call pops the next scripted reply; running out of replies fails
+    loudly instead of silently returning junk.  Pass ``error`` to make
+    the fake raise that error instead (for failure-path tests).
+    """
+
+    def __init__(self, reply=None, replies=None, error=None):
+        if replies is not None:
+            self.replies = list(replies)
+        elif reply is not None:
+            self.replies = [reply]
+        else:
+            self.replies = []
+        self.error = error
+        self.calls = []
+
+    def chat_json(self, system_prompt, user_prompt, max_tokens=800,
+                  temperature=0):
+        """Record the call; raise the scripted error or return a reply."""
+        self.calls.append({"system": system_prompt, "user": user_prompt,
+                           "max_tokens": max_tokens,
+                           "temperature": temperature})
+        if self.error is not None:
+            raise self.error
+        if not self.replies:
+            raise RuntimeError("FakeAiClient: no scripted replies left")
+        return self.replies.pop(0)

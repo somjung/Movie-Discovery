@@ -99,10 +99,15 @@ def describe_ai_error(exc):
         return "เรียกใช้บริการ AI ถี่เกินไป (429) — รอสักครู่แล้วลองใหม่"
     if "timed out" in message:
         return "เชื่อมต่อบริการ AI หมดเวลา — ลองใหม่อีกครั้ง"
+    if "no similar movies" in message:
+        return "ยังมีข้อมูลไม่พอจะแนะนำ — ลองเปลี่ยนเรื่องตั้งต้น"
+    if "no usable picks" in message:
+        return "AI คัดเลือกไม่ได้ในรอบนี้ — ลองใหม่อีกครั้ง"
     looks_bad = (
         "invalid JSON" in message
         or "not valid JSON" in message
         or "missing a message" in message
+        or "incomplete" in message
         or "JSON object" in message
     )
     if looks_bad:
