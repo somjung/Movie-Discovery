@@ -1,0 +1,64 @@
+[
+  {
+    "step": "home",
+    "title": "Movie Discovery & Watchlist Builder"
+  },
+  {
+    "step": "search",
+    "cards": 10,
+    "title": "ค้นหา — Movie Discovery"
+  },
+  {
+    "step": "card-click",
+    "result": "clicked"
+  },
+  {
+    "step": "details",
+    "title": "Inception — Movie Discovery"
+  },
+  {
+    "step": "summary",
+    "found": true,
+    "seconds": 2.6,
+    "excerpt": "สรุปภาษาไทยจาก AI\n\nคอบบ์เป็นโจรผู้เชี่ยวชาญที่ก่ออาชญากรรมทาง corporate espionage ด้วยการแทรกซึมเข้าไปในจิตใต้สำนึกของเป้าหมาย เขาได้รับข้อเสนอให้กลับไปใช้ชีวิต"
+  },
+  {
+    "step": "add-to-watchlist",
+    "notice": "เพิ่มเข้าสู่รายการรับชมแล้ว"
+  },
+  {
+    "step": "watchlist",
+    "title": "รายการรับชม — Movie Discovery"
+  },
+  {
+    "step": "recommend-form",
+    "options": 2
+  },
+  {
+    "step": "recommend-submit",
+    "result": "submitted"
+  },
+  {
+    "step": "recommend-results",
+    "found": true,
+    "seconds": 1.8,
+    "heading": "AI คัดเลือกให้ 4 เรื่อง",
+    "first_reason": "แอนิเมชันแอ็กชันสนุก ๆ ดูง่าย ไม่เครียด เหมาะกับการพักผ่อน"
+  },
+  {
+    "step": "add-pick",
+    "result": "clicked"
+  },
+  {
+    "step": "watchlist-final",
+    "rows": 2
+  },
+  {
+    "step": "history",
+    "title": "ประวัติการค้นหา — Movie Discovery"
+  },
+  {
+    "step": "final-page-text",
+    "sample": "Movie Discovery หน้าแรก รายการรับชม (2) รายการโปรด (0) ประวัติ ผู้ช่วยแนะนำ ประวัติการค้นหาล่าสุด แสดง 10 25 50 แสดง รายการ # คำค้น ผลลัพธ์ "
+  }
+]
