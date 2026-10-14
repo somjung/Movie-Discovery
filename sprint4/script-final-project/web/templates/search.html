@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}ค้นหา — Movie Discovery{% endblock %}
+{% block content %}
+<section class="search-panel">
+  <form class="search-form" action="/search" method="get">
+    <input type="text" name="q" value="{{ query }}"
+           placeholder="ค้นหาชื่อภาพยนตร์ เช่น inception" autocomplete="off">
+    <button type="submit">ค้นหา</button>
+  </form>
+</section>
+
+{% if notice %}
+<p class="notice">{{ notice }}</p>
+{% endif %}
+
+{% if results is defined %}
+  {% if results %}
+  <h2 class="result-count">พบ {{ results|length }} เรื่อง (แสดงสูงสุด 10 รายการแรก):</h2>
+  {% import "_card.html" as cards with context %}
+  <div class="cards">
+    {% for movie in results %}{{ cards.movie_card(movie) }}{% endfor %}
+  </div>
+  {% else %}
+  <p class="notice">ไม่พบภาพยนตร์ที่ตรงกับ '{{ query }}'</p>
+  {% endif %}
+{% endif %}
+{% endblock %}

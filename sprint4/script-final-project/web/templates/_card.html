@@ -1,0 +1,21 @@
+{# One movie card: poster, title, year and rating — shared by every page. #}
+{% macro movie_card(movie) -%}
+<a class="card" href="/movie/{{ movie.id }}">
+  <div class="poster">
+    {% if movie.poster_path %}
+    <img src="https://image.tmdb.org/t/p/w200{{ movie.poster_path }}"
+         alt="โปสเตอร์ {{ movie.title }}" loading="lazy">
+    {% else %}
+    <span class="poster-fallback">🎬</span>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    <div class="card-title">{{ movie.title }}</div>
+    <div class="card-meta">
+      {{ movie.release_date[:4] if movie.release_date else '----' }}
+      · คะแนน {{ '%.1f'|format(movie.vote_average)
+                 if movie.vote_average is not none else '-' }}
+    </div>
+  </div>
+</a>
+{%- endmacro %}

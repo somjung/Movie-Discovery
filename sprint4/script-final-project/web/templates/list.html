@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }} — Movie Discovery{% endblock %}
+{% block content %}
+<h1 class="page-title">{{ page_title }} ({{ rows|length }})</h1>
+
+{% for text in notices %}
+<p class="notice">{{ text }}</p>
+{% endfor %}
+
+<div class="list-tools">
+  <a class="btn" href="/export/{{ kind }}">ดาวน์โหลด CSV</a>
+  {% if kind == "watchlist" and rows %}
+  <form method="post" action="/watchlist/clear"
+        onsubmit="return confirm('ล้างรายการรับชมทั้งหมด?');">
+    <input type="hidden" name="next" value="/watchlist">
+    <button class="btn danger" type="submit">ล้างทั้งหมด</button>
+  </form>
+  {% endif %}
+</div>
+
+{% if rows %}
+<table class="list-table">
+  <thead>
+    <tr>
+      <th>เรื่อง</th>
+      <th>ปี</th>
+      <th>คะแนน</th>
+      <th>เพิ่มเมื่อ</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in rows %}
+    <tr>
+      <td>
+        <a href="/movie/{{ row.tmdb_id }}">{{ row.title or '(ไม่มีชื่อ)' }}</a>
+        {% if row.tmdb_id in other_ids %}
+        <span class="star" title="อยู่ใน{{ other_label }}ด้วย">★</span>
+        {% endif %}
+      </td>
+      <td>{{ row.release_date[:4] if row.release_date else '----' }}</td>
+      <td>{{ '%.1f'|format(row.vote_average)
+                 if row.vote_average is not none else '-' }}</td>
+      <td class="when">{{ row.added_at[:16] }}</td>
+      <td>
+        <form method="post" action="/{{ kind }}/remove/{{ row.tmdb_id }}">
+          <input type="hidden" name="next" value="/{{ kind }}">
+          <button class="btn tiny" type="submit">ลบ</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="notice">ยังไม่มีรายการ — เพิ่มได้จากหน้าค้นหาหรือหน้ารายละเอียดหนัง</p>
+{% endif %}
+{% endblock %}
